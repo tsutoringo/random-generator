@@ -4,7 +4,8 @@
 		randoms: <br>
 		<textarea v-model="randoms" cols="30" rows="10"></textarea><br>
 		result:<br>
-		<textarea v-model="result" cols="30" rows="10"></textarea>
+		<textarea v-model="result" cols="30" rows="10"></textarea><br>
+		<button @click="generate()">生成</button>
 	</div>
 </template>
 
