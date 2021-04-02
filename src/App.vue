@@ -9,7 +9,7 @@
 		<textarea v-model="randoms" cols="30" rows="10"></textarea><br>
 		結果:<br>
 		<textarea v-model="result" cols="30" rows="10"></textarea><br>
-		<button @click="generate()">生成</button><button @click="tts()">読み上げ</button>
+		<button @click="generate()">生成</button><button @click="tts()">読み上げ</button><button @click="share()">Twitterで共有</button>
 		<details>
 			<summary>プライバシーポリシー</summary>
 			このサイトは Google アナリティクスを使用しています
@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import * as base64 from './js/base64';
+
 export default {
 	name: 'App',
 	components: { },
@@ -47,6 +49,7 @@ export default {
 	watch: {
 		randoms () {
 			this.generate();
+			this.save();
 		}
 	},
 	methods: {
@@ -61,7 +64,44 @@ export default {
 			const msg = new SpeechSynthesisUtterance();
 			msg.text = this.result;
 			window.speechSynthesis.speak(msg);
+		},
+		save () {
+			location.hash = base64.encode(JSON.stringify({
+				t: this.randoms,
+				c: this.count
+			}));
+		},
+		load () {
+			if (location.hash) {
+				try {
+					const data = JSON.parse(base64.decode(location.hash.replace('#', '')));
+					this.randoms = data.t || '';
+					this.count = data.c || this.count;
+				} catch (e) {
+					console.error(e);
+				} //eslint-disable-line
+			}
+		},
+		async generateLink () {
+			const params = new URLSearchParams({
+				format: 'json',
+				url: encodeURIComponent(location.href)
+			});
+			return (await (await fetch('https://is.gd/create.php?'+params, {
+				method: 'GET'
+			})).json()).shorturl;
+		},
+		async share () {
+			const url =  await this.generateLink() || `${location.origin}${location.pathname}`;
+			const params = new URLSearchParams({
+				text: this.result.slice(0, this.result.length-url.length-20),
+				url
+			});
+			window.open('https://twitter.com/intent/tweet?'+params);
 		}
+	},
+	mounted () {
+		this.load();
 	}
 }
 </script>
