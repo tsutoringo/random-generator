@@ -85,7 +85,7 @@ export default {
 		async generateLink () {
 			const params = new URLSearchParams({
 				format: 'json',
-				url: encodeURIComponent(location.href)
+				url: location.href
 			});
 			return (await (await fetch('https://is.gd/create.php?'+params, {
 				method: 'GET'
